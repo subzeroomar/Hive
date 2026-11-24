@@ -541,8 +541,8 @@ Development will follow this order:
 
 | Phase | Status |
 |---|---|
-| Phase 1 — Requirements Analysis | In progress |
-| Phase 2 — UI/UX Design | Not started |
+| Phase 1 — Requirements Analysis | finished |
+| Phase 2 — UI/UX Design | in progress|
 | Phase 3 — Database Design | Not started |
 | Phase 4 — Project Setup | Not started |
 | Phase 5 — Authentication & Profiles | Not started |
