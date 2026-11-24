@@ -581,7 +581,7 @@ Development will follow this order:
 |---|---|
 | Phase 1 — Requirements Analysis | Completed |
 | Phase 2 — UI/UX Design | In progress |
-| Phase 3 — Database Design | Not started |
+| Phase 3 — Database Design | In progress |
 | Phase 4 — Project Setup | In progress |
 | Phase 5 — Authentication & Profiles | Not started |
 | Phase 6 — Communities & Posts | Not started |
