@@ -4,6 +4,12 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import config from "./config/config.js";
 
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import communityRoutes from "./routes/community.routes.js";
+import postRoutes from "./routes/post.routes.js";
+import errorHandler from "./middleware/error.middleware.js";
+
 const app = express();
 
 // Security middleware
@@ -28,5 +34,19 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-// Export Express application
+// Authentication routes
+app.use("/api/auth", authRoutes);
+
+//User routes
+app.use("/api/users", userRoutes);
+
+// Community routes
+app.use("/api/communities", communityRoutes);
+
+// Post routes
+app.use("/api/posts", postRoutes);
+    
+// Central error handler
+app.use(errorHandler);
+
 export default app;
