@@ -6,7 +6,7 @@ import CommunityHeader from "./pages/CommunityPage";
 import { AuthPage } from "./pages/AuthPage";
 import { CreatePostPage } from "./pages/CreatePostPage";
 
-// Temporary mock data so pages render cleanly
+
 const mockCommunities = [
   { id: 1, name: "webdev", description: "Everything about web development." },
   { id: 2, name: "design", description: "UI/UX and visual design discussions." },
@@ -18,8 +18,8 @@ const mockPosts = [
     community: "webdev",
     author: "hagar",
     createdAt: "2h ago",
-    title: "Just set up Tailwind CSS for our HIVE project!",
-    content: "Obsidian Ink, Velvet Curfew, and Almond Hearth look really clean together.",
+    title: "Cat?",
+    content: "cat cat cat",
     score: 42,
     commentCount: 2,
   },
@@ -31,14 +31,14 @@ const mockComments = [
     author: "omar",
     authorId: "u2",
     createdAt: "1h ago",
-    content: "Looks awesome! Are we using MongoDB for the backend?",
+    content: "meow",
     replies: [
       {
         id: 102,
         author: "ali",
         authorId: "u3",
         createdAt: "30m ago",
-        content: "Yep, full MERN stack.",
+        content: "what?",
         replies: [],
       },
     ],
@@ -51,11 +51,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Auth pages (no sidebar/navbar) */}
         <Route path="/login" element={<AuthPage mode="login" />} />
         <Route path="/register" element={<AuthPage mode="register" />} />
 
-        {/* Main pages wrapped in the Reddit-style Layout */}
         <Route
           path="/"
           element={
@@ -85,7 +83,7 @@ export default function App() {
               <PostDetailPage
                 post={mockPosts[0]}
                 comments={mockComments}
-                aiSummary="The author set up Tailwind CSS with the team's custom dark color palette for HIVE."
+                aiSummary="The author said AI sucks"
                 isLoggedIn={isLoggedIn}
                 isMod={true}
               />
