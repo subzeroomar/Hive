@@ -2,13 +2,10 @@ import Community from "../models/Community.js";
 import Membership from "../models/Membership.js";
 
 // Return public community information
-const getSafeCommunity = async (community, userId = null) => {
-    const [memberCount, membership] = await Promise.all([
-        Membership.countDocuments({ community: community._id }),
-        userId
-            ? Membership.exists({ user: userId, community: community._id })
-            : Promise.resolve(null),
-    ]);
+const getSafeCommunity = async (community) => {
+    const memberCount = await Membership.countDocuments({
+        community: community._id,
+    });
 
     return {
         id: community._id,
@@ -16,20 +13,8 @@ const getSafeCommunity = async (community, userId = null) => {
         description: community.description,
         creator: community.creator,
         memberCount,
-        isJoined: Boolean(membership),
         createdAt: community.createdAt,
     };
-};
-
-// LIST COMMUNITIES
-export const listCommunities = async (userId = null) => {
-    const communities = await Community.find()
-        .limit(50)
-        .sort({ name: 1 });
-
-    return Promise.all(
-        communities.map((community) => getSafeCommunity(community, userId))
-    );
 };
 
 // CREATE COMMUNITY
@@ -89,24 +74,24 @@ export const createCommunity = async (userId, data) => {
         throw err;
     }
 
-    // The creator automatically becomes the first member.
-    try {
-        await Membership.create({
-            user: userId,
-            community: community._id,
-        });
-    } catch (err) {
-        // Roll back community creation if membership creation fails.
-        await Community.findByIdAndDelete(community._id);
+// The creator automatically becomes the first member.
+try {
+    await Membership.create({
+        user: userId,
+        community: community._id,
+    });
+} catch (err) {
+    // Roll back community creation if membership creation fails.
+    await Community.findByIdAndDelete(community._id);
 
-        throw err;
-    }
+    throw err;
+}
 
-    return getSafeCommunity(community, userId);
+return getSafeCommunity(community);
 };
 
 // GET COMMUNITY BY NAME
-export const getCommunityByName = async (name, userId = null) => {
+export const getCommunityByName = async (name) => {
     const community = await Community.findOne({
         name: name.toLowerCase(),
     });
@@ -117,11 +102,11 @@ export const getCommunityByName = async (name, userId = null) => {
         throw error;
     }
 
-    return getSafeCommunity(community, userId);
+    return getSafeCommunity(community);
 };
 
 // SEARCH COMMUNITIES
-export const searchCommunities = async (query, userId = null) => {
+export const searchCommunities = async (query) => {
     if (!query || !query.trim()) {
         const error = new Error("Search query is required.");
         error.statusCode = 400;
@@ -138,7 +123,7 @@ export const searchCommunities = async (query, userId = null) => {
         .sort({ name: 1 });
 
     return Promise.all(
-        communities.map((community) => getSafeCommunity(community, userId))
+        communities.map(getSafeCommunity)
     );
 };
 
@@ -167,7 +152,7 @@ export const joinCommunity = async (userId, communityId) => {
         throw err;
     }
 
-    return getSafeCommunity(community, userId);
+    return getSafeCommunity(community);
 };
 
 // LEAVE COMMUNITY
@@ -194,5 +179,5 @@ export const leaveCommunity = async (userId, communityId) => {
     // Leaving removes membership only.
     // The creator remains the moderator through community.creator.
 
-    return getSafeCommunity(community, userId);
+    return getSafeCommunity(community);
 };

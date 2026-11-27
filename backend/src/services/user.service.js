@@ -1,6 +1,4 @@
 import User from "../models/User.js";
-import Post from "../models/Post.js";
-import Comment from "../models/Comment.js";
 
 // Return public user information
 const getSafeUser = (user) => ({
@@ -11,8 +9,8 @@ const getSafeUser = (user) => ({
     createdAt: user.createdAt,
 });
 
-// Get a user's public profile along with recent posts (and comments for logged-in viewers)
-export const getUserProfile = async (username, viewerId = null) => {
+// Get a user's public profile
+export const getUserProfile = async (username) => {
     const user = await User.findOne({
         username: username.toLowerCase(),
     });
@@ -23,58 +21,7 @@ export const getUserProfile = async (username, viewerId = null) => {
         throw error;
     }
 
-    const includePrivateActivity = Boolean(viewerId);
-
-    const [posts, comments] = await Promise.all([
-        Post.find({ author: user._id })
-            .sort({ createdAt: -1 })
-            .limit(20)
-            .populate("author", "username avatar")
-            .populate("community", "name creator"),
-        includePrivateActivity
-            ? Comment.find({ author: user._id })
-                  .sort({ createdAt: -1 })
-                  .limit(20)
-                  .populate("post", "title")
-            : Promise.resolve([]),
-    ]);
-
-    return {
-        user: getSafeUser(user),
-        posts: posts.map((post) => ({
-            id: post._id,
-            title: post.title,
-            content: post.content,
-            image: post.image,
-            author: {
-                id: post.author._id,
-                username: post.author.username,
-                avatar: post.author.avatar || "",
-            },
-            community: post.community
-                ? {
-                      id: post.community._id,
-                      name: post.community.name,
-                      creator: post.community.creator,
-                  }
-                : null,
-            ...(includePrivateActivity && {
-                upvotes: post.upvotes,
-                downvotes: post.downvotes,
-                score: post.score,
-            }),
-            commentCount: post.commentCount,
-            createdAt: post.createdAt,
-        })),
-        ...(includePrivateActivity && {
-            comments: comments.map((c) => ({
-                id: c._id,
-                content: c.content,
-                post: c.post ? { id: c.post._id, title: c.post.title } : null,
-                createdAt: c.createdAt,
-            })),
-        }),
-    };
+    return getSafeUser(user);
 };
 
 // Update the authenticated user's profile

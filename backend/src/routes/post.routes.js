@@ -7,12 +7,10 @@ import {
     remove,
     getCommunityFeed,
     getHome,
-    summarize,
 } from "../controllers/post.controller.js";
 
 import protect from "../middleware/auth.middleware.js";
 import optionalAuth from "../middleware/optionalAuth.middleware.js";
-import uploadSingleImage from "../middleware/upload.middleware.js";
 
 const router = express.Router();
 
@@ -22,19 +20,16 @@ router.get("/feed", optionalAuth, getHome);
 // Community posts (guests and authenticated users)
 router.get("/community/:communityId", optionalAuth, getCommunityFeed);
 
-// Create a post (authentication required; accepts multipart image or JSON)
-router.post("/", protect, uploadSingleImage, create);
+// Create a post (authentication required)
+router.post("/", protect, create);
 
-// AI post summarization (authentication required)
-router.post("/:id/summarize", protect, summarize);
+// Get a post by ID (public)
+router.get("/:id", getById);
 
-// Get a post by ID (guests and authenticated users)
-router.get("/:id", optionalAuth, getById);
+// Update a post (authentication required)
+router.put("/:id", protect, update);
 
-// Update a post (authentication required; accepts multipart image or JSON)
-router.put("/:id", protect, uploadSingleImage, update);
-
-// Delete a post (author or community moderator)
+// Delete a post (authentication required)
 router.delete("/:id", protect, remove);
 
 export default router;
