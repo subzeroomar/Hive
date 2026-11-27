@@ -1,52 +1,24 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import HomeFeedPage from "./pages/HomeFeedPage";
 import PostDetailPage from "./pages/PostDetailPage";
-import CommunityHeader from "./pages/CommunityPage";
+import CommunityPage from "./pages/CommunityPage";
 import { AuthPage } from "./pages/AuthPage";
 import { CreatePostPage } from "./pages/CreatePostPage";
+import SearchPage from "./pages/SearchPage";
+import UserProfilePage from "./pages/UserProfilePage";
 
+function AppRoutes() {
+  const { loading } = useAuth();
 
-const mockCommunities = [
-  { id: 1, name: "webdev", description: "Everything about web development." },
-  { id: 2, name: "design", description: "UI/UX and visual design discussions." },
-];
-
-const mockPosts = [
-  {
-    id: 1,
-    community: "webdev",
-    author: "hagar",
-    createdAt: "2h ago",
-    title: "Cat?",
-    content: "cat cat cat",
-    score: 42,
-    commentCount: 2,
-  },
-];
-
-const mockComments = [
-  {
-    id: 101,
-    author: "omar",
-    authorId: "u2",
-    createdAt: "1h ago",
-    content: "meow",
-    replies: [
-      {
-        id: 102,
-        author: "ali",
-        authorId: "u3",
-        createdAt: "30m ago",
-        content: "what?",
-        replies: [],
-      },
-    ],
-  },
-];
-
-export default function App() {
-  const isLoggedIn = true; // Flip to false to test the Guest view
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-obsidian text-almond flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
@@ -57,48 +29,60 @@ export default function App() {
         <Route
           path="/"
           element={
-            <Layout isLoggedIn={isLoggedIn}>
-              <HomeFeedPage posts={mockPosts} isLoggedIn={isLoggedIn} />
+            <Layout>
+              <HomeFeedPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <Layout>
+              <SearchPage />
             </Layout>
           }
         />
         <Route
           path="/r/:communityName"
           element={
-            <Layout isLoggedIn={isLoggedIn}>
-              <CommunityHeader
-                community={mockCommunities[0]}
-                isJoined={true}
-                isMod={true}
-                isLoggedIn={isLoggedIn}
-              />
-              <HomeFeedPage posts={mockPosts} isLoggedIn={isLoggedIn} />
+            <Layout>
+              <CommunityPage />
             </Layout>
           }
         />
         <Route
           path="/post/:postId"
           element={
-            <Layout isLoggedIn={isLoggedIn}>
-              <PostDetailPage
-                post={mockPosts[0]}
-                comments={mockComments}
-                aiSummary="The author said AI sucks"
-                isLoggedIn={isLoggedIn}
-                isMod={true}
-              />
+            <Layout>
+              <PostDetailPage />
             </Layout>
           }
         />
         <Route
           path="/submit"
           element={
-            <Layout isLoggedIn={isLoggedIn}>
-              <CreatePostPage communities={mockCommunities} />
+            <Layout>
+              <CreatePostPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/u/:username"
+          element={
+            <Layout>
+              <UserProfilePage />
             </Layout>
           }
         />
       </Routes>
     </BrowserRouter>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }

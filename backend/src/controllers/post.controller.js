@@ -7,11 +7,24 @@ import {
     deletePost,
     getCommunityPosts,
     getHomeFeed,
+    summarizePost,
 } from "../services/post.service.js";
 
-// Create a post
+// Build a full public URL for an uploaded file
+const getUploadedImageUrl = (req) => {
+    if (!req.file) return undefined;
+    return `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+};
+
+// Create a post (supports both multipart file upload and JSON image URL)
 export const create = asyncHandler(async (req, res) => {
-    const post = await createPost(req.user._id, req.body);
+    const uploadedImageUrl = getUploadedImageUrl(req);
+    const body = {
+        ...req.body,
+        ...(uploadedImageUrl ? { image: uploadedImageUrl } : {}),
+    };
+
+    const post = await createPost(req.user._id, body);
 
     res.status(201).json({
         success: true,
@@ -24,7 +37,7 @@ export const create = asyncHandler(async (req, res) => {
 
 // Get a post by ID
 export const getById = asyncHandler(async (req, res) => {
-    const post = await getPostById(req.params.id);
+    const post = await getPostById(req.params.id, req.user?._id);
 
     res.status(200).json({
         success: true,
@@ -34,13 +47,15 @@ export const getById = asyncHandler(async (req, res) => {
     });
 });
 
-// Update a post
+// Update a post (supports both multipart file upload and JSON image URL)
 export const update = asyncHandler(async (req, res) => {
-    const post = await updatePost(
-        req.user._id,
-        req.params.id,
-        req.body
-    );
+    const uploadedImageUrl = getUploadedImageUrl(req);
+    const body = {
+        ...req.body,
+        ...(uploadedImageUrl ? { image: uploadedImageUrl } : {}),
+    };
+
+    const post = await updatePost(req.user._id, req.params.id, body);
 
     res.status(200).json({
         success: true,
@@ -51,12 +66,9 @@ export const update = asyncHandler(async (req, res) => {
     });
 });
 
-// Delete a post
+// Delete a post (author or community moderator)
 export const remove = asyncHandler(async (req, res) => {
-    const result = await deletePost(
-        req.user._id,
-        req.params.id
-    );
+    const result = await deletePost(req.user._id, req.params.id);
 
     res.status(200).json({
         success: true,
@@ -83,10 +95,17 @@ export const getCommunityFeed = asyncHandler(async (req, res) => {
 
 // Get the home feed
 export const getHome = asyncHandler(async (req, res) => {
-    const result = await getHomeFeed(
-        req.user?._id,
-        req.query
-    );
+    const result = await getHomeFeed(req.user?._id, req.query);
+
+    res.status(200).json({
+        success: true,
+        data: result,
+    });
+});
+
+// Summarize a post with AI (authenticated users only)
+export const summarize = asyncHandler(async (req, res) => {
+    const result = await summarizePost(req.params.id);
 
     res.status(200).json({
         success: true,

@@ -7,16 +7,17 @@ import {
 } from "../controllers/user.controller.js";
 
 import protect from "../middleware/auth.middleware.js";
+import optionalAuth from "../middleware/optionalAuth.middleware.js";
 
 const router = express.Router();
 
 // Search users (must come before /:username)
 router.get("/search", search);
 
-// Get a public user profile
-router.get("/:username", getProfile);
-
-// Update the authenticated user's profile
+// Update the authenticated user's profile (must come before /:username)
 router.put("/me", protect, updateProfile);
+
+// Get a public user profile
+router.get("/:username", optionalAuth, getProfile);
 
 export default router;

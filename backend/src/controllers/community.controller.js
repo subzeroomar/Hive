@@ -1,12 +1,26 @@
 import asyncHandler from "../utils/asyncHandler.js";
 
 import {
+    listCommunities,
     createCommunity,
     getCommunityByName,
     searchCommunities,
     joinCommunity,
     leaveCommunity,
 } from "../services/community.service.js";
+
+// List communities
+export const list = asyncHandler(async (req, res) => {
+    const communities = await listCommunities(req.user?._id);
+
+    res.status(200).json({
+        success: true,
+        results: communities.length,
+        data: {
+            communities,
+        },
+    });
+});
 
 // Create a new community
 export const create = asyncHandler(async (req, res) => {
@@ -26,7 +40,10 @@ export const create = asyncHandler(async (req, res) => {
 
 // Get a community by name
 export const getByName = asyncHandler(async (req, res) => {
-    const community = await getCommunityByName(req.params.name);
+    const community = await getCommunityByName(
+        req.params.name,
+        req.user?._id
+    );
 
     res.status(200).json({
         success: true,
@@ -38,7 +55,10 @@ export const getByName = asyncHandler(async (req, res) => {
 
 // Search communities
 export const search = asyncHandler(async (req, res) => {
-    const communities = await searchCommunities(req.query.q);
+    const communities = await searchCommunities(
+        req.query.q,
+        req.user?._id
+    );
 
     res.status(200).json({
         success: true,

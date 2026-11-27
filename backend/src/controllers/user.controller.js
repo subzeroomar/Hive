@@ -8,13 +8,11 @@ import {
 
 // Get a public user profile
 export const getProfile = asyncHandler(async (req, res) => {
-    const user = await getUserProfile(req.params.username);
+    const result = await getUserProfile(req.params.username, req.user?._id);
 
     res.status(200).json({
         success: true,
-        data: {
-            user,
-        },
+        data: result,
     });
 });
 

@@ -9,9 +9,10 @@ export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 // --- Core Fetch Helper ---
 async function request(endpoint, options = {}) {
   const token = getToken();
+  const isFormData = options.body instanceof FormData;
 
   const headers = {
-    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...(options.body && !isFormData ? { "Content-Type": "application/json" } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
@@ -19,7 +20,11 @@ async function request(endpoint, options = {}) {
   const res = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: options.body
+      ? isFormData
+        ? options.body
+        : JSON.stringify(options.body)
+      : undefined,
   });
 
   const payload = await res.json().catch(() => ({}));
@@ -63,6 +68,8 @@ export const searchUsers = (query) =>
   request(`/users/search?q=${encodeURIComponent(query)}`);
 
 // --- Communities ---
+export const getCommunities = () => request("/communities");
+
 export const createCommunity = ({ name, description }) =>
   request("/communities", {
     method: "POST",
@@ -93,19 +100,74 @@ export const getCommunityPosts = (
     `/posts/community/${communityId}?page=${page}&limit=${limit}&sort=${sort}`
   );
 
-export const createPost = ({ title, content, image, communityId }) =>
-  request("/posts", {
+export const createPost = ({ title, content, image, imageFile, communityId }) => {
+  if (imageFile) {
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", content || "");
+    formData.append("communityId", communityId);
+    formData.append("image", imageFile);
+
+    return request("/posts", {
+      method: "POST",
+      body: formData,
+    });
+  }
+
+  return request("/posts", {
     method: "POST",
     body: { title, content, image, communityId },
   });
+};
 
 export const getPostById = (postId) => request(`/posts/${postId}`);
 
-export const updatePost = (postId, { title, content, image }) =>
-  request(`/posts/${postId}`, {
+export const updatePost = (postId, { title, content, image, imageFile }) => {
+  if (imageFile) {
+    const formData = new FormData();
+    if (title !== undefined) formData.append("title", title);
+    if (content !== undefined) formData.append("content", content);
+    formData.append("image", imageFile);
+
+    return request(`/posts/${postId}`, {
+      method: "PUT",
+      body: formData,
+    });
+  }
+
+  return request(`/posts/${postId}`, {
     method: "PUT",
     body: { title, content, image },
   });
+};
 
 export const deletePost = (postId) =>
   request(`/posts/${postId}`, { method: "DELETE" });
+
+export const summarizePost = (postId) =>
+  request(`/posts/${postId}/summarize`, { method: "POST" });
+
+// --- Votes ---
+export const voteOnPost = (postId, value) =>
+  request(`/votes/${postId}`, {
+    method: "POST",
+    body: { value },
+  });
+
+// --- Comments ---
+export const getPostComments = (postId) => request(`/comments/post/${postId}`);
+
+export const createComment = (postId, { content, parentComment = null }) =>
+  request(`/comments/post/${postId}`, {
+    method: "POST",
+    body: { content, parentComment },
+  });
+
+export const updateComment = (commentId, { content }) =>
+  request(`/comments/${commentId}`, {
+    method: "PUT",
+    body: { content },
+  });
+
+export const deleteComment = (commentId) =>
+  request(`/comments/${commentId}`, { method: "DELETE" });
